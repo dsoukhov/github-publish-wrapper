@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if [ "$#" -lt 3 ]
+then
+    echo "Useage: github-publish repo username files"
+    echo "GITHUB_TOKEN and VERSION must be stored as env vars prior to running. Multiple files must be space separated."
+    exit
+fi
+
+go get github.com/aktau/github-release
+export GITHUB_REPO=$1
+export GITHUB_USER=$2
+
+LATEST_TAG=`git describe --abbrev=0 --tags`
+DESC="# Changes :
+`git log --pretty=tformat:%s $LATEST_TAG...HEAD | sed 's/^/*\ /'`"
+
+github-release delete --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${VERSION}
+github-release release --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${VERSION} --name ${VERSION} --description "${DESC}" --pre-release
+parallel github-release upload --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${VERSION} --name {/} --file {} \
+::: "${*:3}"
