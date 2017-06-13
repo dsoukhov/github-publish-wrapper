@@ -10,6 +10,9 @@ fi
 go get github.com/aktau/github-release
 export GITHUB_REPO=$1
 export GITHUB_USER=$2
+FILES=${*:3:$(($#))}
+
+echo $FILES
 
 LATEST_TAG=`git describe --abbrev=0 --tags`
 DESC="# Changes :
@@ -17,5 +20,4 @@ DESC="# Changes :
 
 github-release delete --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${VERSION}
 github-release release --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${VERSION} --name ${VERSION} --description "${DESC}" --pre-release
-parallel github-release upload --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${VERSION} --name {/} --file {} \
-::: "${*:3}"
+parallel github-release upload --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${VERSION} --name {/} --file {} ::: $FILES
